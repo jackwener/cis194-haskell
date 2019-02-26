@@ -9,9 +9,20 @@ func2' = sum . filter even . takeWhile (>1) .
 
 -- Ex.2
 
-data Tree a = Leafx
-            | Node Int (Tree a) a (Tree a)
-            deriving (show, Eq)
+data Tree a = Leaf | Node Integer (Tree a) a (Tree a)
+  deriving (Show, Eq, Ord)
 
-foldTree :: [a] -> Tree a
-foldTree = foldr insert Leaf
+treeLevel :: Tree a -> Integer
+treeLevel Leaf           = 0
+treeLevel (Node n _ _ _) = n
+
+foldTree :: (Ord a) => [a] -> Tree a
+foldTree = foldr treeInsert Leaf
+  where
+    treeInsert x Leaf = Node 0 Leaf x Leaf
+    treeInsert x (Node n left root right)
+      | left > right = Node (treeLevel newRight + 1) left root newRight
+      | otherwise = Node (treeLevel newLeft + 1) newLeft root right
+        where
+          newRight = treeInsert x right
+          newLeft = treeInsert x left
