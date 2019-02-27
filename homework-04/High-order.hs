@@ -9,20 +9,37 @@ func2' = sum . filter even . takeWhile (>1) .
 
 -- Ex.2
 
-data Tree a = Leaf | Node Integer (Tree a) a (Tree a)
-  deriving (Show, Eq, Ord)
+data Tree a = Leaf
+            | Node Integer (Tree a) a (Tree a)
+  deriving (Show, Eq)
 
-treeLevel :: Tree a -> Integer
-treeLevel Leaf           = 0
-treeLevel (Node n _ _ _) = n
+-- should produce a balanced Tree using @foldr@
+foldTree :: Eq a => [a] -> Tree a
+foldTree xs = foldr (balancedInsert start) Leaf xs
+  where start = floor (logBase 2 $ fromIntegral(length xs)::Double)
 
-foldTree :: (Ord a) => [a] -> Tree a
-foldTree = foldr treeInsert Leaf
-  where
-    treeInsert x Leaf = Node 0 Leaf x Leaf
-    treeInsert x (Node n left root right)
-      | left > right = Node (treeLevel newRight + 1) left root newRight
-      | otherwise = Node (treeLevel newLeft + 1) newLeft root right
-        where
-          newRight = treeInsert x right
-          newLeft = treeInsert x left
+balancedInsert :: Int -> a -> Tree a -> Tree a
+balancedInsert _ _ _ = Leaf
+{-balancedInsert _ x (Node n left y right)-}
+          {-| right == Leaf = Node n left y (Node (n-1) Leaf x Leaf)-}
+          {-| otherwise = Node n (Node (n-1) Leaf x Leaf) y right-}
+{-balancedInsert start x _ = Node  Leaf x Leaf-}
+
+-- Ex.3
+
+binaryXor :: Bool -> Bool -> Bool
+binaryXor True False = True
+binaryXor False True = True
+binaryXor _ _ = False
+
+xor :: [Bool] -> Bool
+xor = foldr binaryXor False
+
+
+-- map as a fold
+map' :: (a -> b) -> [a] -> [b]
+map' f = foldr (\x y -> f x : y) []
+
+-- foldl with foldr
+myFoldl :: (a -> b -> a) -> a -> [b] -> a
+myFoldl f x = foldr (flip f) x . reverse
